@@ -1,16 +1,10 @@
 (function() {
     'use strict';
 
-    var Launchpad = require('./lib/Launchpad');
+    var channel = process.env.CHANNEL || 'launchpad';
 
-    function next(err) {
-        if (err) { console.error(err); }
-        process.exit(1);
-    }
-
-    Launchpad.init(function(err) {
-        if (err) { next(err); return; }
-        Launchpad.subscribe('Launchpad');
+    require('./lib/Launchpad').start().subscribe(channel, function() {
+        console.log('Now running on "' + channel + '" channel.');
     });
 
 })();

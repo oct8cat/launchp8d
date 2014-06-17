@@ -5,8 +5,9 @@
     var Launchpad = require('../lib/Launchpad');
 
     var fixtures = {
-        task: {type: 'type', params: {src: 'src', dest: 'dest'}},
-        key: function() { return (new Date()).getTime().toString(); }
+        task: {type: 'test', params: {test: 'test'}},
+        key: function() { return (new Date()).getTime().toString(); },
+        channel: 'launchpad',
     };
 
     describe('Launchpad', function() {
@@ -93,6 +94,35 @@
                         assert.equal(keys.length, 0);
                         done();
                     });
+                });
+            });
+        });
+
+        describe('.start()', function() {
+            before(function(done) { Launchpad.start().subscribe(fixtures.channel, done); });
+            after(function(done) { Launchpad.stop(done); });
+
+            it('should run a task on "task:run" message', function(done) {
+                var key = fixtures.key();
+                var task = fixtures.task;
+                Launchpad.addTask(key, task, function(err, task) {
+                    Launchpad.subClient.on('message', function(channel, message) {
+                        message = JSON.parse(message);
+                        if (message.type === Launchpad.messages.COMPLETE) { done(); return; }
+                    });
+                    var message = {type: Launchpad.messages.RUN, task: key};
+                    Launchpad.client.publish(fixtures.channel, JSON.stringify(message));
+                });
+            });
+        });
+
+        describe('.stop()', function() {
+            it('should remove all listeners', function(done) {
+                Launchpad.start(fixtures.channel);
+                assert.equal(Object.keys(Launchpad.subClient._events).length, 1);
+                Launchpad.stop(function() {
+                    assert.equal(Object.keys(Launchpad.subClient._events).length, 0);
+                    done();
                 });
             });
         });
