@@ -1,0 +1,21 @@
+{
+  "name": "launchp8d",
+  "version": "0.0.0",
+  "description": "Long-running tasks' runner with redis notifications",
+  "main": "index.js",
+  "scripts": {
+    "test": "NODE_ENV=test mocha -R spec test/test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:oct8cat/launchp8d"
+  },
+  "author": "Tako Neko <oct8cat@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "async": "^0.9.0",
+    "hiredis": "^0.1.17",
+    "redis": "^0.10.3",
+    "rssi": "0.0.7"
+  }
+}
