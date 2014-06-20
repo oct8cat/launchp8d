@@ -3,6 +3,9 @@
 
     var assert = require('assert');
     var Launchpad = require('../lib/Launchpad');
+    var j = require('path').join;
+
+    var DIR_FIXTURES = j(__dirname, 'fixtures');
 
     var fixtures = {
         task: {type: 'test', params: {test: 'test'}},
@@ -99,8 +102,11 @@
         });
 
         describe('.start()', function() {
-            before(function(done) { Launchpad.start().subscribe(fixtures.channel, done); });
-            after(function(done) { Launchpad.stop(done); });
+            before(function(done) {
+                Launchpad.loadRunnables(j(DIR_FIXTURES, 'runnables')).start().subscribe(fixtures.channel, done);
+            });
+
+            after(function(done) { Launchpad.unloadRunnables().stop(done); });
 
             it('should run a task on "task:run" message', function(done) {
                 var key = fixtures.key();
@@ -108,7 +114,10 @@
                 Launchpad.addTask(key, task, function(err, task) {
                     Launchpad.subClient.on('message', function(channel, message) {
                         message = JSON.parse(message);
-                        if (message.type === Launchpad.messages.COMPLETE) { done(); return; }
+                        if (message.type === Launchpad.messages.COMPLETE) {
+                            var err = typeof message.error === 'string' ? new Error(message.error) : message.error;
+                            done(err);
+                        }
                     });
                     var message = {type: Launchpad.messages.RUN, task: key};
                     Launchpad.client.publish(fixtures.channel, JSON.stringify(message));
@@ -124,6 +133,28 @@
                     assert.equal(Object.keys(Launchpad.subClient._events).length, 0);
                     done();
                 });
+            });
+        });
+
+        describe('.loadRunnables()', function() {
+            after(function(done) { Launchpad.unloadRunnables(); done(); });
+
+            it('should put loaded runnables into `Launchpad.runnables` array.', function(done) {
+                assert.equal(Launchpad.runnables.length, 0);
+                Launchpad.loadRunnables(j(DIR_FIXTURES, 'runnables'));
+                assert.equal(Launchpad.runnables.length, 1);
+                done();
+            });
+        });
+
+        describe('.unloadRunnables()', function() {
+            before(function(done) { Launchpad.loadRunnables(j(DIR_FIXTURES, 'runnables')); done(); });
+
+            it('should empty `Launchpad.runnables` array', function(done) {
+                assert.equal(Launchpad.runnables.length, 1);
+                Launchpad.unloadRunnables();
+                assert.equal(Launchpad.runnables.length, 0);
+                done();
             });
         });
     });
