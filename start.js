@@ -15,7 +15,9 @@
      */
     var channel = process.env.CHANNEL || 'launchpad';
 
-    require('./lib/Launchpad').loadRunnables(RUNNABLES).start().subscribe(channel, function() {
+    var settings = require('./settings');
+
+    require('./lib/Launchpad')(settings).loadRunnables(RUNNABLES).start().subscribe(channel, function() {
         console.log('Now running on "' + channel + '" channel.');
     });
 
