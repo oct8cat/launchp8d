@@ -1,6 +1,6 @@
 {
   "name": "launchp8d",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Long-running tasks' runner with redis notifications",
   "main": "index.js",
   "scripts": {
